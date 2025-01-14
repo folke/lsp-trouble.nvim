@@ -193,6 +193,56 @@ function M.statusline(opts)
   }
 end
 
+-- Renders a trouble trable of diagnostic counts
+--   { error=error_cnt, warn=warn_cnt, info=info_cnt, hint=hint_cnt }
+-- Check the docs for examples.
+---@param opts? trouble.Mode|string|{hl_group?:string}
+---@return {get: (fun():table)}
+function M.diagnosticsCount(opts)
+  local Spec = require("trouble.spec")
+  local Section = require("trouble.view.section")
+  local Render = require("trouble.view.render")
+  opts.groups = {
+    { "severity", format = "{severity}{count}" },
+  }
+  opts.title = false
+  opts.format = ""
+  opts = Config.get(opts)
+
+  local renderer = Render.new(opts, {
+    multiline = false,
+    indent = false,
+  })
+  local status = nil ---@type table?
+  ---@cast opts trouble.Mode
+
+  local s = Spec.section(opts)
+  s.max_items = s.max_items or opts.max_items
+  local section = Section.new(s, opts)
+  section.on_update = function()
+    status = nil
+    if package.loaded["lualine"] then
+      vim.schedule(function()
+        require("lualine").refresh()
+      end)
+    else
+      vim.cmd.redrawstatus()
+    end
+  end
+  section:listen()
+  section:refresh()
+  return {
+    get = function()
+      if status then
+        return status
+      end
+      renderer:clear()
+      renderer:sections({ section })
+      return renderer:diagnosticCount()
+    end,
+  }
+end
+
 return setmetatable(M, {
   __index = function(_, k)
     if k == "last_mode" then
