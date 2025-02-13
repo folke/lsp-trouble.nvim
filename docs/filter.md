@@ -4,7 +4,7 @@
 
 A simple filter is a table whose keys are item attributes.
 The following filter keeps items with attribute `buf = 0` **and** `ft = 'lua'`,
-i.e., diagnostics with severity error to the current buffer when its filetype is `lua`.
+i.e., diagnostics from the current buffer with filetype `lua`.
 
 ```lua
 {
@@ -74,6 +74,30 @@ The following filter **keeps** diagnostics for the current buffer **or** diagnos
           },
         },
       },
+    },
+  },
+}
+```
+
+### Cascading diagnostics
+
+The following filter **keeps** the most severe diagnostics.
+Once those diagnostics are resolved,
+less severe entries are shown.
+
+```lua
+{
+  modes = {
+    my_diagnostics = {
+      mode = 'diagnostics',
+      filter = function(items)
+        local severity = vim.iter(items):fold(
+          vim.diagnostic.severity.HINT,
+          function(r, v) return math.min(r, v.severity) end)
+        return vim.tbl_filter(
+          function(item) return item.severity == severity end,
+          items)
+      end,
     },
   },
 }
