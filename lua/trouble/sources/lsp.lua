@@ -77,7 +77,7 @@ M.config = {
         { "filename", format = "{file_icon} {filename} {count}" },
       },
       sort = { "filename", "pos", "text" },
-      format = "{text:ts} ({item.client}) {pos}",
+      format = "{text:ts} {pos} {hl:Title}{item.client:Title}{hl}",
     },
     lsp = {
       desc = "LSP definitions, references, implementations, type definitions, and declarations",
