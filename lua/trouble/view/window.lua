@@ -7,11 +7,13 @@ local Util = require("trouble.util")
 ---@field size number | {width:number, height:number} when a table is provided, either the width or height is used based on the position
 ---@field position "top" | "bottom" | "left" | "right"
 
+---@alias floatPositionArg number|fun(parent_size:{width:number, height:number}):number
+
 ---@class trouble.Window.float
 ---@field type "float"
 ---@field relative "editor" | "win" | "cursor" cursor is only valid for float
----@field size {width: number, height: number}
----@field position {[1]: number, [2]: number}
+---@field size {width: floatPositionArg, height: floatPositionArg}
+---@field position {[1]: floatPositionArg, [2]: floatPositionArg}
 ---@field anchor? string
 ---@field focusable? boolean
 ---@field zindex? integer
@@ -309,16 +311,56 @@ function M:mount_float(opts)
     config[v] = opts[v]
   end
   config.focusable = true
-  config.height = opts.size.height <= 1 and math.floor(parent_size.height * opts.size.height) or opts.size.height
-  config.width = opts.size.width <= 1 and math.floor(parent_size.width * opts.size.width) or opts.size.width
 
-  config.row = math.abs(opts.position[1]) <= 1 and math.floor((parent_size.height - config.height) * opts.position[1])
-    or opts.position[1]
+  local position_opts = {
+    ---@type {width: number, height: number}
+    ---@diagnostic disable-next-line: assign-type-mismatch
+    size = vim.deepcopy(opts.size),
+    ---@type {[1]: number, [2]: number}
+    ---@diagnostic disable-next-line: assign-type-mismatch
+    position = vim.deepcopy(opts.position)
+  }
+
+  -- If size or position is a function, then invoke it
+  if type(opts.size.height) == "function" then
+    position_opts.size.height = opts.size.height(parent_size)
+  end
+  if type(opts.size.width) == "function" then
+    position_opts.size.width = opts.size.width(parent_size)
+  end
+  if type(opts.position[1]) == "function" then
+    position_opts.position[1] = opts.position[1](parent_size)
+  end
+  if type(opts.position[2]) == "function" then
+    position_opts.position[2] = opts.position[2](parent_size)
+  end
+  if type(parent_size.height) == "function" then
+    parent_size.height = parent_size.height(parent_size)
+  end
+  if type(parent_size.width) == "function" then
+    parent_size.width = parent_size.width(parent_size)
+  end
+  if type(config.height) == "function" then
+    config.height = config.height(parent_size)
+  end
+  if type(config.width) == "function" then
+    config.width = config.width(parent_size)
+  end
+
+  config.height = math.abs(position_opts.size.height) <= 1 and math.floor(parent_size.height * position_opts.size.height) or position_opts.size.height
+  config.height = config.height < 0 and (parent_size.height + config.height) or config.height
+
+  config.width = math.abs(position_opts.size.width) <= 1 and math.floor(parent_size.width * position_opts.size.width) or position_opts.size.width
+  config.width = config.width < 0 and (parent_size.width + config.width) or config.width
+
+  config.row = math.abs(position_opts.position[1]) <= 1 and math.floor((parent_size.height - config.height) * position_opts.position[1])
+    or position_opts.position[1]
   config.row = config.row < 0 and (parent_size.height + config.row) or config.row
 
-  config.col = math.abs(opts.position[2]) <= 1 and math.floor((parent_size.width - config.width) * opts.position[2])
-    or opts.position[2]
+  config.col = math.abs(position_opts.position[2]) <= 1 and math.floor((parent_size.width - config.width) * position_opts.position[2])
+    or position_opts.position[2]
   config.col = config.col < 0 and (parent_size.width + config.col) or config.col
+
   if config.relative ~= "win" then
     config.win = nil
   end
