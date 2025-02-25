@@ -649,7 +649,7 @@ config.defaults.actions.files["ctrl-t"] = actions.open
 
 When you open fzf-lua, you can now hit `<c-t>` to open the results in **Trouble**
 
-### Statusline Component
+### Statusline LSP Document Symbols Component
 
 Example for [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim):
 
@@ -671,6 +671,41 @@ Example for [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim):
     table.insert(opts.sections.lualine_c, {
       symbols.get,
       cond = symbols.has,
+    })
+  end,
+}
+```
+
+### Statusline Diagnostic Count Component
+
+Have the diagnostics counts in statusline widget match the trouble diagnostics filter you use.
+
+Example for [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim):
+
+```lua
+{
+  "nvim-lualine/lualine.nvim",
+  opts = function(_, opts)
+    local trouble = require 'trouble'
+    local troubleDignosticsCount = trouble.diagnosticsCount ({
+      -- use diagnostics mode and specify filter
+      mode = 'diagnostics',
+      filter = {
+        -- limit to files in the current project
+        function(item)
+          return item.filename:find((vim.loop or vim.uv).cwd(), 1, true)
+        end,
+      },
+      -- Or use a custom mode you created that already contains the filter
+      -- mode = 'onlyworkspace',
+    })
+    table.insert(opts.sections.lualine_c, {
+      'diagnostics',
+      sources = {
+        function()
+          return troubleDignosticsCount.get()
+        end,
+      },
     })
   end,
 }

@@ -122,6 +122,26 @@ function M:statusline(opts)
   return table.concat(lines, sep)
 end
 
+---@return table -- { error = count, warn = count, info = count, hint = count }
+function M:diagnosticCount()
+  local list = {}
+  for _, line in ipairs(self._lines) do
+    for _, segment in ipairs(line) do
+      local str = segment.str:gsub("%s+", "")
+      table.insert(list, str)
+    end
+  end
+
+  local lookupTable = {}
+  for i = 1, #list, 2 do
+    local key = list[i]:lower()
+    local value = tonumber(list[i + 1])
+    lookupTable[key] = value
+  end
+
+  return lookupTable
+end
+
 function M:render(buf)
   local lines = {}
 
