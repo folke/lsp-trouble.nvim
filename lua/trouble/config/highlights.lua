@@ -93,21 +93,22 @@ function M.source(source, links)
 end
 
 M._fixed = {} ---@type table<string, string>
----@param sl string
-function M.fix_statusline(sl, statusline_hl)
-  local bg = vim.api.nvim_get_hl(0, { name = statusline_hl, link = false })
-  bg = bg and bg.bg or nil
-
-  return sl:gsub("%%#(.-)#", function(hl)
-    if not M._fixed[hl] then
-      local opts = vim.api.nvim_get_hl(0, { name = hl, link = false }) or {}
-      opts.bg = bg
-      local group = "TroubleStatusline" .. vim.tbl_count(M._fixed)
-      vim.api.nvim_set_hl(0, group, opts)
-      M._fixed[hl] = group
-    end
-    return "%#" .. M._fixed[hl] .. "#"
-  end)
+---@param hl string
+---@param statusline_hl string?
+function M.fix_statusline_bg(hl, statusline_hl)
+  if not statusline_hl then
+    return hl
+  end
+  local key = hl .. "_" .. statusline_hl
+  if not M._fixed[key] then
+    local opts = vim.api.nvim_get_hl(0, { name = hl, link = false }) or {}
+    local statusline_opts = vim.api.nvim_get_hl(0, { name = statusline_hl, link = false })
+    opts.bg = statusline_opts and statusline_opts.bg or nil
+    local group = "TroubleStatusline" .. vim.tbl_count(M._fixed)
+    vim.api.nvim_set_hl(0, group, opts)
+    M._fixed[key] = group
+  end
+  return M._fixed[key]
 end
 
 return M

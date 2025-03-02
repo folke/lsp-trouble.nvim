@@ -184,10 +184,7 @@ function M.statusline(opts)
       end
       renderer:clear()
       renderer:sections({ section })
-      status = renderer:statusline()
-      if opts.hl_group then
-        status = require("trouble.config.highlights").fix_statusline(status, opts.hl_group)
-      end
+      status = renderer:statusline({ hl_group = opts.hl_group })
       return status
     end,
   }

@@ -104,20 +104,28 @@ function M:nl()
   return self
 end
 
----@param opts? {sep?:string}
+---@param opts? {sep?:string,hl_group?:string}
 function M:statusline(opts)
   local sep = opts and opts.sep or " "
+  local hl_group = opts and opts.hl_group or nil
+  if hl_group then
+    sep = ("%%#%s#%s%%*"):format(hl_group, sep)
+  end
   local lines = {} ---@type string[]
   for _, line in ipairs(self._lines) do
     local parts = {}
     for _, segment in ipairs(line) do
       local str = segment.str:gsub("%%", "%%%%")
-      if segment.hl then
-        str = ("%%#%s#%s%%*"):format(segment.hl, str)
+      local fix_statusline_bg = require("trouble.config.highlights").fix_statusline_bg
+      local hl = segment.hl and fix_statusline_bg(segment.hl, hl_group) or hl_group
+      if hl then
+        str = ("%%#%s#%s%%*"):format(hl, str)
       end
       parts[#parts + 1] = str
     end
-    table.insert(lines, table.concat(parts, ""))
+    if #parts ~= 0 then
+      table.insert(lines, table.concat(parts, ""))
+    end
   end
   return table.concat(lines, sep)
 end
