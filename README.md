@@ -689,6 +689,7 @@ The table below shows all the highlight groups defined for Trouble.
 | **TroubleBasename** | ***TroubleFilename*** |  |
 | **TroubleCode** | ***Special*** |  |
 | **TroubleCount** | ***TabLineSel*** |  |
+| **TroubleCursorLine** | ***CursorLine*** |  |
 | **TroubleDirectory** | ***Directory*** |  |
 | **TroubleFilename** | ***Directory*** |  |
 | **TroubleIconArray** | ***@punctuation.bracket*** |  |

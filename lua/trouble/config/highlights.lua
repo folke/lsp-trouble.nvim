@@ -9,6 +9,7 @@ M.colors = {
   NormalNC          = "NormalFloat",
   Text              = "Normal",
   Preview           = "Visual",
+  CursorLine        = "CursorLine",
 
   -- Item
   Filename          = "Directory",

@@ -707,6 +707,7 @@ Highlight Groups ~
   TroubleBasename            TroubleFilename           
   TroubleCode                Special                   
   TroubleCount               TabLineSel                
+  TroubleCursorLine          CursorLine
   TroubleDirectory           Directory                 
   TroubleFilename            Directory                 
   TroubleIconArray           @punctuation.bracket      
